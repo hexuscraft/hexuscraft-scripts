@@ -12,6 +12,7 @@ goto :main
 	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "%plugin%" > nul
 	robocopy "%USERPROFILE%\Minecraft\Jars\cache" "%cwd%\cache" > nul
 
+	if "%serverGroup%"=="DEBUG" >"%cwd%\_debug.dat" echo.
 	if "%worldEdit%"=="true" robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "WorldEdit.jar" > nul
 
 	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "ViaVersion.jar" > nul
@@ -68,6 +69,7 @@ goto :main
 
 	>"%cwd%\_group.dat" echo %serverGroup%
 	>"%cwd%\_name.dat" echo %serverName%
+
 	>"%cwd%\_redis.dat" echo 127.0.0.1
 	>>"%cwd%\_redis.dat" echo 6379
 
