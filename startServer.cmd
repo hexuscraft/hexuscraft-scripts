@@ -8,7 +8,6 @@ goto :main
 :start
 	call :log "Creating %serverName% (%serverGroup%)"
 
-	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%" "paper.jar" > nul
 	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "%plugin%" > nul
 	robocopy "%USERPROFILE%\Minecraft\Jars\cache" "%cwd%\cache" > nul
 
@@ -74,7 +73,7 @@ goto :main
 	>>"%cwd%\_redis.dat" echo 6379
 
 	call :log "Starting %serverName% (%serverGroup%)"
-	start "%serverName%" /D "%cwd%" java -Xms%ram%M -Xmx%ram%M -jar "%cwd%/paper.jar"
+	start "%serverName%" /D "%cwd%" java -Xms%ram%M -Xmx%ram%M -jar "%USERPROFILE%/Minecraft/Jars/paper.jar"
 
 	echo Success
 	exit /B 0
