@@ -10,6 +10,10 @@ goto :main
 	call :log "Killing %serverName%"
 
 	taskkill /f /fi "WINDOWTITLE eq %serverName%"
+	taskkill /f /fi "WINDOWTITLE eq %serverName%"
+	taskkill /f /fi "WINDOWTITLE eq %serverName%"
+	taskkill /f /fi "WINDOWTITLE eq %serverName%"
+	taskkill /f /fi "WINDOWTITLE eq %serverName%"
 	rmdir /S /Q "%USERPROFILE%\Minecraft\Servers\%serverName%" > nul
 
 	call :log "Killed %serverName%"
