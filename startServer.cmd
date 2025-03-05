@@ -15,11 +15,10 @@ goto :main
 	if "%worldEdit%"=="true" robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "WorldEdit.jar" > nul
 
 	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "ViaVersion.jar" > nul
+	mkdir "%cwd%\plugins\ViaVersion"
 	>"%cwd%\plugins\ViaVersion\config.yml" echo # Hexuscraft ViaVersion config.yml
-	>>"%cwd%\plugins\ViaVersion\config.yml" echo checkforupdates: false
-	>>"%cwd%\plugins\ViaVersion\config.yml" echo block-disconnect-msg: You are using an unsupported Minecraft version!
-	>>"%cwd%\plugins\ViaVersion\config.yml" echo max-pps: -1
-
+	>>"%cwd%\plugins\ViaVersion\config.yml" echo check-for-updates: false
+	
 	>"%cwd%\eula.txt" echo eula=true
 
 	>"%cwd%\server.properties" echo # Hexuscraft server.properties
@@ -35,6 +34,7 @@ goto :main
 	>>"%cwd%\server.properties" echo server-port=%port%
 	>>"%cwd%\server.properties" echo snooper-enabled=false
 	>>"%cwd%\server.properties" echo spawn-protection=0
+	>>"%cwd%\server.properties" echo view-distance=32
 	
 	>"%cwd%\bukkit.yml" echo # Hexuscraft bukkit.yml
 	>>"%cwd%\bukkit.yml" echo settings:
@@ -73,7 +73,8 @@ goto :main
 	>>"%cwd%\_redis.dat" echo 6379
 
 	call :log "Starting %serverName% (%serverGroup%)"
-	start "%serverName%" /D "%cwd%" java -Xms%ram%M -Xmx%ram%M -jar "%USERPROFILE%/Minecraft/Jars/paper.jar"
+::	start "%serverName%" /D "%cwd%" java -Xms%ram%M -Xmx%ram%M -jar "%USERPROFILE%/Minecraft/Jars/paper.jar" --universe "universe" --nojline --host "%privateAddress%" --port "%port%" --online-mode "false" --max-players "%capacity%" --log-append "false"
+	start "%serverName%" /D "%cwd%" java -Xmx4G -jar "%USERPROFILE%/Minecraft/Jars/paper.jar" --universe "universe" --nojline --host "%privateAddress%" --port "%port%" --online-mode "false" --max-players "%capacity%" --log-append "false"
 
 	echo Success
 	exit /B 0
@@ -84,10 +85,11 @@ goto :main
 	cd "%cwd%"
 
 	mkdir "%cwd%\plugins"
-	mkdir "%cwd%\world"
 	mkdir "%cwd%\cache"
+	mkdir "%cwd%\universe"
+	mkdir "%cwd%\universe\world"
 
-	powershell Expand-Archive "%USERPROFILE%\Minecraft\Worlds\%worldZip%" -DestinationPath "%cwd%\world"
+	powershell Expand-Archive "%USERPROFILE%\Minecraft\Worlds\%worldZip%" -DestinationPath "%cwd%\universe\world"
 
 	set disableStats=true
 	goto :start
