@@ -18,6 +18,9 @@ goto :main
 	mkdir "%cwd%\plugins\ViaVersion"
 	>"%cwd%\plugins\ViaVersion\config.yml" echo # Hexuscraft ViaVersion config.yml
 	>>"%cwd%\plugins\ViaVersion\config.yml" echo check-for-updates: false
+	>>"%cwd%\plugins\ViaVersion\config.yml" echo max-pps: -1
+	>>"%cwd%\plugins\ViaVersion\config.yml" echo tracking-period: -1
+	>>"%cwd%\plugins\ViaVersion\config.yml" echo disable-1_13-auto-complete: true
 	
 	>"%cwd%\eula.txt" echo eula=true
 
@@ -50,6 +53,8 @@ goto :main
 	>>"%cwd%\spigot.yml" echo   bungeecord: true
 	>>"%cwd%\spigot.yml" echo commands:
 	>>"%cwd%\spigot.yml" echo   spam-exclusions: []
+	>>"%cwd%\spigot.yml" echo timings:
+	>>"%cwd%\spigot.yml" echo   enabled: false
 	>>"%cwd%\spigot.yml" echo messages:
 	>>"%cwd%\spigot.yml" echo   whitelist: "&c&lYou are not whitelisted&r\n&fMaybe try again later?&r"
 	>>"%cwd%\spigot.yml" echo   unknown-command: "&9Command Center>&r &7Unknown command. Type&r &e/help&r &7for help."
