@@ -11,7 +11,6 @@ goto :main
 	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "%plugin%" > nul
 	robocopy "%USERPROFILE%\Minecraft\Jars\cache" "%cwd%\cache" > nul
 
-	if "%serverGroup%"=="DEBUG" >"%cwd%\_debug.dat" echo.
 	if "%worldEdit%"=="true" robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "WorldEdit.jar" > nul
 
 	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "ViaVersion.jar" > nul
@@ -20,7 +19,7 @@ goto :main
 	>>"%cwd%\plugins\ViaVersion\config.yml" echo check-for-updates: false
 	>>"%cwd%\plugins\ViaVersion\config.yml" echo max-pps: -1
 	>>"%cwd%\plugins\ViaVersion\config.yml" echo tracking-period: -1
-	>>"%cwd%\plugins\ViaVersion\config.yml" echo disable-1_13-auto-complete: true
+	>>"%cwd%\plugins\ViaVersion\config.yml" echo disable-1_13-auto-complete: false
 	
 	>"%cwd%\eula.txt" echo eula=true
 
@@ -74,12 +73,10 @@ goto :main
 	>"%cwd%\_group.dat" echo %serverGroup%
 	>"%cwd%\_name.dat" echo %serverName%
 
-	>"%cwd%\_redis.dat" echo 127.0.0.1
-	>>"%cwd%\_redis.dat" echo 6379
+	robocopy "%USERPROFILE%\Minecraft" "%cwd%" "_redis.dat" > nul
 
 	call :log "Starting %serverName% (%serverGroup%)"
-::	start "%serverName%" /D "%cwd%" java -Xms%ram%M -Xmx%ram%M -jar "%USERPROFILE%/Minecraft/Jars/paper.jar" --universe "universe" --nojline --host "%privateAddress%" --port "%port%" --online-mode "false" --max-players "%capacity%" --log-append "false"
-	start "%serverName%" /D "%cwd%" java -Xmx4G -jar "%USERPROFILE%/Minecraft/Jars/paper.jar" --universe "universe" --nojline --host "%privateAddress%" --port "%port%" --online-mode "false" --max-players "%capacity%" --log-append "false"
+	start "%serverName%" /D "%cwd%" java -Xms%ram%M -Xmx%ram%M --add-modules=jdk.incubator.vector -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -jar "%USERPROFILE%/Minecraft/Jars/paper.jar" --universe "universe" --host "%privateAddress%" --port "%port%" --online-mode "false" --max-players "%capacity%" --log-append "false"
 
 	echo Success
 	exit /B 0
