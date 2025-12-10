@@ -2,11 +2,11 @@
 goto :main
 
 :log
-	>>"startServer.log" echo [%date%] [%time%] %~1
+	>>"servers.log" echo [%date%] [%time%] %~1
 	exit /b 0
 
 :start
-	call :log "Creating %serverName% (%serverGroup%)"
+	call :log "Starting %serverName% (%serverGroup%)"
 
 	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "%plugin%" > nul
 	robocopy "%USERPROFILE%\Minecraft\Jars\cache" "%cwd%\cache" > nul
@@ -29,11 +29,7 @@ goto :main
 	>>"%cwd%\server.properties" echo announce-player-achievements=false
 	>>"%cwd%\server.properties" echo force-gamemode=true
 	>>"%cwd%\server.properties" echo gamemode=2
-	>>"%cwd%\server.properties" echo max-players=%capacity%
 	>>"%cwd%\server.properties" echo motd=
-	>>"%cwd%\server.properties" echo online-mode=false
-	>>"%cwd%\server.properties" echo server-ip=%privateAddress%
-	>>"%cwd%\server.properties" echo server-port=%port%
 	>>"%cwd%\server.properties" echo snooper-enabled=false
 	>>"%cwd%\server.properties" echo spawn-protection=0
 	>>"%cwd%\server.properties" echo view-distance=32
@@ -70,39 +66,50 @@ goto :main
 		>>"%cwd%\spigot.yml" echo     achievement.openInventory: 1
 	)
 
-	>"%cwd%\_group.dat" echo %serverGroup%
 	>"%cwd%\_name.dat" echo %serverName%
-
+	>"%cwd%\_group.dat" echo %serverGroup%
 	robocopy "%USERPROFILE%\Minecraft" "%cwd%" "_redis.dat" > nul
 
-	call :log "Starting %serverName% (%serverGroup%)"
-	start "%serverName%" /D "%cwd%" java -Xms%ram%M -Xmx%ram%M --add-modules=jdk.incubator.vector -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -jar "%USERPROFILE%/Minecraft/Jars/paper.jar" --universe "universe" --host "%privateAddress%" --port "%port%" --online-mode "false" --max-players "%capacity%" --log-append "false"
+	start "%serverName%" /D "%cwd%" java -Xms%ram%M -Xmx%ram%M -jar "%USERPROFILE%/Minecraft/Jars/paper.jar" --universe "universe" --host "127.0.0.1" --port "%port%" --online-mode "false" --max-players "%capacity%"
+	call :log "Started %serverName% (%serverGroup%)"
 
 	echo Success
-	exit /B 0
+	exit /b 0
 
-:start_basic
+:setup_basic
+	:: We run "taskkill" twice as ServerMonitor *could* attempt to start the same server while it's already running.
+	:: To be clear: this should not happen, but this is a fallback just in-case it does.
+	taskkill /f /fi "WINDOWTITLE eq %serverName%"
+	taskkill /f /fi "WINDOWTITLE eq %serverName%"
+
 	rmdir /S /Q "%cwd%" > nul
 	mkdir "%cwd%"
-	cd "%cwd%"
-
 	mkdir "%cwd%\plugins"
 	mkdir "%cwd%\cache"
 	mkdir "%cwd%\universe"
 	mkdir "%cwd%\universe\world"
+	cd "%cwd%"
 
 	powershell Expand-Archive "%USERPROFILE%\Minecraft\Worlds\%worldZip%" -DestinationPath "%cwd%\universe\world"
 
 	set disableStats=true
-	goto :start
 
-:start_clans
+	exit /b 0
+
+:setup_webtranslator
+	call :setup_basic
+	if "%errorlevel%"=="1" exit /b 1
+
+	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "TebexBukkit.jar" > nul
+	exit /b 0
+
+:setup_clans
 	if not exist "%cwd%" (
-		call :log "Could not start %serverName% (%serverGroup%) as it does not exist."
-		echo Failure
-		exit
+		call :log "FATAL: Clans server %serverName% does not exist"
+		echo UNKNOWN_CLANS
+		exit /b 1
 	)
-	goto :start
+	exit /b 0
 
 :main
 	set serverName=%1
@@ -120,12 +127,19 @@ goto :main
 		exit
 	)
 
-	call :log "Creating %serverName% (%serverGroup%) (Port: %port%) (Ram: %ram% MB) (Capacity: %capacity%) (Plugin: %plugin%) (World: %worldZip%) (WorldEdit: %addWorldEdit%)"
+	call :log "Creating %serverName% (Group: %serverGroup%) (Port: %port%) (Ram: %ram% MB) (Capacity: %capacity%) (Plugin: %plugin%) (World: %worldZip%) (WorldEdit: %addWorldEdit%)"
 
 	set cwd=%USERPROFILE%\Minecraft\Servers\%serverName%
 	if "%serverGroup%"=="Clans" (
-		call :start_clans
-	) ELSE (
-		call :start_basic
+		call :setup_clans
+		if "%errorlevel%"=="1" exit /b 1
+	) else if "%serverGroup%"=="WebTranslator" (
+		call :setup_webtranslator
+		if "%errorlevel%"=="1" exit /b 1
+	) else (
+		call :setup_basic
+		if "%errorlevel%"=="1" exit /b 1
 	)
-	exit /B 0
+	
+	call :start
+	exit /b %errorlevel%
