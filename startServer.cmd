@@ -14,13 +14,8 @@ goto :main
 	if "%worldEdit%"=="true" robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "WorldEdit.jar" > nul
 
 	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "ViaVersion.jar" > nul
-	mkdir "%cwd%\plugins\ViaVersion"
-	>"%cwd%\plugins\ViaVersion\config.yml" echo # Hexuscraft ViaVersion config.yml
-	>>"%cwd%\plugins\ViaVersion\config.yml" echo check-for-updates: false
-	>>"%cwd%\plugins\ViaVersion\config.yml" echo max-pps: -1
-	>>"%cwd%\plugins\ViaVersion\config.yml" echo tracking-period: -1
-	>>"%cwd%\plugins\ViaVersion\config.yml" echo disable-1_13-auto-complete: false
-	
+	robocopy "%USERPROFILE%\Minecraft\Jars\ViaVersion" "%cwd%\plugins\ViaVersion" > nul
+
 	>"%cwd%\eula.txt" echo eula=true
 
 	>"%cwd%\server.properties" echo # Hexuscraft server.properties
@@ -100,7 +95,9 @@ goto :main
 	call :setup_basic
 	if "%errorlevel%"=="1" exit /b 1
 
-	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "TebexBukkit.jar" > nul
+	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "Tebex.jar" > nul
+	robocopy "%USERPROFILE%\Minecraft\Jars\Tebex" "%cwd%\plugins\Tebex" > nul
+
 	exit /b 0
 
 :setup_clans
