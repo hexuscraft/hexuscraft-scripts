@@ -6,6 +6,7 @@ goto :main
 	exit /b 0
 
 :start
+	title %serverName%
 	call :log "Starting %serverName% (%serverGroup%)"
 
 	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "%plugin%" > nul
@@ -25,6 +26,7 @@ goto :main
 	>>"%cwd%\server.properties" echo force-gamemode=true
 	>>"%cwd%\server.properties" echo gamemode=2
 	>>"%cwd%\server.properties" echo motd=
+	>>"%cwd%\server.properties" echo online-mode=false
 	>>"%cwd%\server.properties" echo snooper-enabled=false
 	>>"%cwd%\server.properties" echo spawn-protection=0
 	>>"%cwd%\server.properties" echo view-distance=32
@@ -65,18 +67,13 @@ goto :main
 	>"%cwd%\_group.dat" echo %serverGroup%
 	robocopy "%USERPROFILE%\Minecraft" "%cwd%" "_redis.dat" > nul
 
-	start "%serverName%" /D "%cwd%" java -Xms%ram%M -Xmx%ram%M -jar "%USERPROFILE%/Minecraft/Jars/paper.jar" --universe "universe" --host "127.0.0.1" --port "%port%" --online-mode "false" --max-players "%capacity%"
+	start "%serverName%" /D "%cwd%" java -Xms%ram%M -Xmx%ram%M -jar "%USERPROFILE%/Minecraft/Jars/paper.jar" --universe "universe" --host "127.0.0.1" --port "%port%" --max-players "%capacity%"
 	call :log "Started %serverName% (%serverGroup%)"
 
 	echo Success
 	exit /b 0
 
 :setup_basic
-	:: We run "taskkill" twice as ServerMonitor *could* attempt to start the same server while it's already running.
-	:: To be clear: this should not happen, but this is a fallback just in-case it does.
-	taskkill /f /fi "WINDOWTITLE eq %serverName%"
-	taskkill /f /fi "WINDOWTITLE eq %serverName%"
-
 	rmdir /S /Q "%cwd%" > nul
 	mkdir "%cwd%"
 	mkdir "%cwd%\plugins"
@@ -97,6 +94,9 @@ goto :main
 
 	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "Tebex.jar" > nul
 	robocopy "%USERPROFILE%\Minecraft\Jars\Tebex" "%cwd%\plugins\Tebex" > nul
+
+	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "NuVotifier.jar" > nul
+	robocopy "%USERPROFILE%\Minecraft\Jars\Votifier" "%cwd%\plugins\Votifier" > nul
 
 	exit /b 0
 
@@ -124,7 +124,12 @@ goto :main
 		exit
 	)
 
-	call :log "Creating %serverName% (Group: %serverGroup%) (Port: %port%) (Ram: %ram% MB) (Capacity: %capacity%) (Plugin: %plugin%) (World: %worldZip%) (WorldEdit: %addWorldEdit%)"
+	call :log "Starting %serverName% (Group: %serverGroup%) (Port: %port%) (Ram: %ram% MB) (Capacity: %capacity%) (Plugin: %plugin%) (World: %worldZip%) (WorldEdit: %addWorldEdit%)"
+
+	:: We run "taskkill" twice as ServerMonitor *could* attempt to start the same server while it's already running.
+	:: To be clear: this should not happen, but this is a fallback just in-case it does.
+	taskkill /f /fi "WINDOWTITLE eq %serverName%"
+	taskkill /f /fi "WINDOWTITLE eq %serverName%"
 
 	set cwd=%USERPROFILE%\Minecraft\Servers\%serverName%
 	if "%serverGroup%"=="Clans" (
