@@ -26,6 +26,7 @@ goto :main
 	>>"%cwd%\server.properties" echo force-gamemode=true
 	>>"%cwd%\server.properties" echo gamemode=2
 	>>"%cwd%\server.properties" echo motd=
+	:: --online-mode start-up flag does not work. We must use the server.properties setting.
 	>>"%cwd%\server.properties" echo online-mode=false
 	>>"%cwd%\server.properties" echo snooper-enabled=false
 	>>"%cwd%\server.properties" echo spawn-protection=0
@@ -67,6 +68,7 @@ goto :main
 	>"%cwd%\_group.dat" echo %serverGroup%
 	robocopy "%USERPROFILE%\Minecraft" "%cwd%" "_redis.dat" > nul
 
+	:: --online-mode start-up flag does not work. We must use the server.properties setting.
 	start "%serverName%" /D "%cwd%" java -Xms%ram%M -Xmx%ram%M -jar "%USERPROFILE%/Minecraft/Jars/paper.jar" --universe "universe" --host "127.0.0.1" --port "%port%" --max-players "%capacity%"
 	call :log "Started %serverName% (%serverGroup%)"
 
