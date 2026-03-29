@@ -13,9 +13,10 @@ goto :main
 	robocopy "%USERPROFILE%\Minecraft\Jars\cache" "%cwd%\cache" > nul
 
 	if "%worldEdit%"=="true" robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "WorldEdit.jar" > nul
-
-	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "ViaVersion.jar" > nul
-	robocopy "%USERPROFILE%\Minecraft\Jars\ViaVersion" "%cwd%\plugins\ViaVersion" > nul
+	if "%viaVersion%"=="true" (
+		robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "ViaVersion.jar" > nul
+		robocopy "%USERPROFILE%\Minecraft\Jars\ViaVersion" "%cwd%\plugins\ViaVersion" > nul
+	)
 
 	>"%cwd%\eula.txt" echo eula=true
 
@@ -82,7 +83,6 @@ goto :main
 	mkdir "%cwd%\cache"
 	mkdir "%cwd%\universe"
 	mkdir "%cwd%\universe\world"
-	cd "%cwd%"
 
 	powershell Expand-Archive "%USERPROFILE%\Minecraft\Worlds\%worldZip%" -DestinationPath "%cwd%\universe\world"
 
@@ -110,6 +110,14 @@ goto :main
 	)
 	exit /b 0
 
+:setup_build
+	if not exist "%cwd%" (
+		call :log "FATAL: Build server %serverName% does not exist"
+		echo UNKNOWN_BUILD
+		exit /b 1
+	)
+	exit /b 0
+
 :main
 	set serverName=%1
 	set serverGroup=%2
@@ -119,6 +127,7 @@ goto :main
 	set plugin=%6
 	set worldZip=%7
 	set worldEdit=%8
+	set viaVersion=false
 
 	if "%worldEdit%"=="" (
 		call :log "Could not start %serverName% (%serverGroup%) as it does not have enough start parameters."
@@ -136,6 +145,9 @@ goto :main
 	set cwd=%USERPROFILE%\Minecraft\Servers\%serverName%
 	if "%serverGroup%"=="Clans" (
 		call :setup_clans
+		if "%errorlevel%"=="1" exit /b 1
+	) else if "%serverGroup%"=="Build" (
+		call :setup_build
 		if "%errorlevel%"=="1" exit /b 1
 	) else if "%serverGroup%"=="WebTranslator" (
 		call :setup_webtranslator
