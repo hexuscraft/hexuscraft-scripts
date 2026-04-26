@@ -83,7 +83,9 @@ goto :main
 	mkdir "%cwd%\universe"
 	mkdir "%cwd%\universe\world"
 
-	powershell Expand-Archive "%USERPROFILE%\Minecraft\Worlds\%worldZip%" -DestinationPath "%cwd%\universe\world"
+	if defined worldZip (
+		powershell Expand-Archive "%USERPROFILE%\Minecraft\Worlds\%worldZip%" -DestinationPath "%cwd%\universe\world"
+	)
 
 	set disableStats=true
 
@@ -117,9 +119,9 @@ goto :main
 	set plugin=%6
 	set worldZip=%7
 	set worldEdit=%8
-	set viaVersion=%9PP
+	set viaVersion=%9
 
-	if "%viaVersion%"=="" (
+	if not defined viaVersion (
 		call :log "FATAL: Could not start %serverName% (%serverGroup%): Insufficient start parameters"
 		exit /b 1
 	)
