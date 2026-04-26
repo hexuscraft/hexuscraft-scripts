@@ -3,6 +3,7 @@ goto :main
 
 :log
 	>>"servers.log" echo [%date%] [%time%] %~1
+	echo %~1
 	exit /b 0
 
 :start
@@ -72,11 +73,9 @@ goto :main
 	:: --online-mode start-up flag does not work. We must use the server.properties setting.
 	start "%serverName%" /D "%cwd%" java -Xms%ram%M -Xmx%ram%M -jar "%USERPROFILE%/Minecraft/Jars/paper.jar" --universe "universe" --host "127.0.0.1" --port "%port%" --max-players "%capacity%"
 	call :log "Started %serverName% (%serverGroup%)"
-
-	echo Success
 	exit /b 0
 
-:setup_basic
+:setup_new
 	rmdir /S /Q "%cwd%" > nul
 	mkdir "%cwd%"
 	mkdir "%cwd%\plugins"
@@ -90,8 +89,8 @@ goto :main
 
 	exit /b 0
 
-:setup_webtranslator
-	call :setup_basic
+:setup_web
+	call :setup_new
 	if "%errorlevel%"=="1" exit /b 1
 
 	robocopy "%USERPROFILE%\Minecraft\Jars" "%cwd%\plugins" "Tebex.jar" > nul
@@ -102,18 +101,9 @@ goto :main
 
 	exit /b 0
 
-:setup_clans
+:setup_existing
 	if not exist "%cwd%" (
-		call :log "FATAL: Clans server %serverName% does not exist"
-		echo UNKNOWN_CLANS
-		exit /b 1
-	)
-	exit /b 0
-
-:setup_build
-	if not exist "%cwd%" (
-		call :log "FATAL: Build server %serverName% does not exist"
-		echo UNKNOWN_BUILD
+		call :log "FATAL: Could not start %serverName% (%serverGroup%): Does not exist"
 		exit /b 1
 	)
 	exit /b 0
@@ -127,15 +117,14 @@ goto :main
 	set plugin=%6
 	set worldZip=%7
 	set worldEdit=%8
-	set viaVersion=false
+	set viaVersion=%9PP
 
-	if "%worldEdit%"=="" (
-		call :log "Could not start %serverName% (%serverGroup%) as it does not have enough start parameters."
-		echo Failure
-		exit
+	if "%viaVersion%"=="" (
+		call :log "FATAL: Could not start %serverName% (%serverGroup%): Insufficient start parameters"
+		exit /b 1
 	)
 
-	call :log "Starting %serverName% (Group: %serverGroup%) (Port: %port%) (Ram: %ram% MB) (Capacity: %capacity%) (Plugin: %plugin%) (World: %worldZip%) (WorldEdit: %addWorldEdit%)"
+	call :log "Starting %serverName% (%serverGroup%) (Port: %port%) (Ram: %ram% MB) (Capacity: %capacity%) (Plugin: %plugin%) (World: %worldZip%) (WorldEdit: %worldEdit%) (ViaVersion: %viaVersion%)"
 
 	:: We run "taskkill" twice as ServerMonitor *could* attempt to start the same server while it's already running.
 	:: To be clear: this should not happen, but this is a fallback just in-case it does.
@@ -144,16 +133,16 @@ goto :main
 
 	set cwd=%USERPROFILE%\Minecraft\Servers\%serverName%
 	if "%serverGroup%"=="Clans" (
-		call :setup_clans
+		call :setup_existing
 		if "%errorlevel%"=="1" exit /b 1
 	) else if "%serverGroup%"=="Build" (
-		call :setup_build
+		call :setup_existing
 		if "%errorlevel%"=="1" exit /b 1
-	) else if "%serverGroup%"=="WebTranslator" (
-		call :setup_webtranslator
+	) else if "%serverGroup%"=="Web" (
+		call :setup_web
 		if "%errorlevel%"=="1" exit /b 1
 	) else (
-		call :setup_basic
+		call :setup_new
 		if "%errorlevel%"=="1" exit /b 1
 	)
 	
