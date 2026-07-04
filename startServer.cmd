@@ -71,7 +71,7 @@ goto :main
 	robocopy "%USERPROFILE%\Minecraft" "%cwd%" "_redis.dat" > nul
 
 	:: --online-mode start-up flag does not work. We must use the server.properties setting.
-	start "%serverName%" /D "%cwd%" java -Xms%ram%M -Xmx%ram%M -jar "%USERPROFILE%/Minecraft/Jars/paper.jar" --universe "universe" --host "127.0.0.1" --port "%port%" --max-players "%capacity%"
+	start "%serverName%" /MIN /HIGH /D "%cwd%" java -Xms%ram%M -Xmx%ram%M -jar "%USERPROFILE%/Minecraft/Jars/paper.jar" --universe "universe" --host "127.0.0.1" --port "%port%" --max-players "%capacity%"
 	call :log "Started %serverName% (%serverGroup%)"
 	exit /b 0
 
